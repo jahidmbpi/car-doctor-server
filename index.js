@@ -1,12 +1,19 @@
 const express = require("express");
 const cors = require("cors");
 const jwt = require("jsonwebtoken");
+const cokieparser = require("cookie-parser");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
 const port = process.env.PORT || 5000;
 
-app.use(cors());
+app.use(
+  cors({
+    origin: ["http://localhost:5173"],
+    credentials: true,
+  })
+);
 app.use(express.json());
+app.use(cokieparser());
 require("dotenv").config();
 
 const uri = `mongodb+srv://${process.env.CAR_USER}:${process.env.CAR_PASSWORD}@cluster0.g8zp6.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
@@ -19,6 +26,18 @@ const client = new MongoClient(uri, {
     deprecationErrors: true,
   },
 });
+
+const tockenVerify = async (req, res, next) => {
+  const tocken = req.cookies?.tocken;
+  if (!tocken) {
+    return res.status(401).send({ message: "unathorised" });
+  }
+  jwt.verify(tocken, process.env.ACCESS_TOCKENT_SECRET, (error, decoded) => {
+    if (error) {
+      return res.status(401).send({ message: "unathorised" });
+    }
+  });
+};
 
 async function run() {
   try {
