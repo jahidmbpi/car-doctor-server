@@ -147,6 +147,17 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/confirmdbookings", async (req, res) => {
+      try {
+        const query = { status: "confirmed" };
+        const result = await bookingCollection.find(query).toArray();
+        res.status(200).json(result);
+      } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: "Something went wrong!" });
+      }
+    });
+
     app.delete("/bookings/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
