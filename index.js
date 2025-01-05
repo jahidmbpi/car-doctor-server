@@ -74,6 +74,46 @@ async function run() {
         console.log("data not found", error);
       }
     });
+    // cencel admin
+    app.patch("/updateuser", async (req, res) => {
+      try {
+        const id = req.body.id; // সঠিকভাবে id আলাদা করা
+        const updateRole = "user";
+        const filter = { _id: new ObjectId(id) }; // ObjectId সঠিকভাবে ব্যবহার
+        const updateDoc = {
+          $set: {
+            role: updateRole,
+          },
+        };
+        const result = await userCollection.updateOne(filter, updateDoc);
+        res.send(result);
+      } catch (error) {
+        console.log(error);
+        res
+          .status(500)
+          .send({ message: "An error occurred!", error: error.message });
+      }
+    });
+    // create admin
+    app.patch("/updateadmin", async (req, res) => {
+      try {
+        const id = req.body.id; // সঠিকভাবে id আলাদা করা
+        const updateRole = "admin";
+        const filter = { _id: new ObjectId(id) }; // ObjectId সঠিকভাবে ব্যবহার
+        const updateDoc = {
+          $set: {
+            role: updateRole,
+          },
+        };
+        const result = await userCollection.updateOne(filter, updateDoc);
+        res.send(result);
+      } catch (error) {
+        console.log(error);
+        res
+          .status(500)
+          .send({ message: "An error occurred!", error: error.message });
+      }
+    });
 
     app.get("/alluser", async (req, res) => {
       const result = await userCollection.find().toArray();
