@@ -1,4 +1,5 @@
 const express = require("express");
+
 const cors = require("cors");
 const jwt = require("jsonwebtoken");
 const cokieparser = require("cookie-parser");
@@ -8,7 +9,11 @@ const port = process.env.PORT || 5000;
 
 app.use(
   cors({
-    origin: ["http://localhost:5173"],
+    origin: [
+      "http://localhost:5173",
+      "https://car-doctor-99baf.web.app",
+      "https://car-doctor-99baf.firebaseapp.com",
+    ],
     credentials: true,
   })
 );
@@ -46,6 +51,12 @@ const tockenVerify = async (req, res, next) => {
   });
 };
 
+const kockieoption = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production" ? true : false,
+  sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+};
+
 async function run() {
   try {
     const serviceCollection = client.db("carDoctor").collection("services");
@@ -77,9 +88,9 @@ async function run() {
     // cencel admin
     app.patch("/updateuser", async (req, res) => {
       try {
-        const id = req.body.id; // সঠিকভাবে id আলাদা করা
+        const id = req.body.id;
         const updateRole = "user";
-        const filter = { _id: new ObjectId(id) }; // ObjectId সঠিকভাবে ব্যবহার
+        const filter = { _id: new ObjectId(id) };
         const updateDoc = {
           $set: {
             role: updateRole,
@@ -97,9 +108,9 @@ async function run() {
     // create admin
     app.patch("/updateadmin", async (req, res) => {
       try {
-        const id = req.body.id; // সঠিকভাবে id আলাদা করা
+        const id = req.body.id;
         const updateRole = "admin";
-        const filter = { _id: new ObjectId(id) }; // ObjectId সঠিকভাবে ব্যবহার
+        const filter = { _id: new ObjectId(id) };
         const updateDoc = {
           $set: {
             role: updateRole,
@@ -127,18 +138,14 @@ async function run() {
         expiresIn: "1h",
       });
       // console.log(tocken);
-      res
-        .cookie("tocken", tocken, {
-          httpOnly: true,
-          secure: true,
-          sameSite: "none",
-        })
-        .send({ success: true });
+      res.cookie("tocken", tocken, kockieoption).send({ success: true });
     });
 
     app.post("/loggedin", async (req, res) => {
       const user = req.body;
-      res.clearCookie("tocken", { maxAge: 0 }).send({ success: true });
+      res
+        .clearCookie("tocken", { ...kockieoption, maxAge: 0 })
+        .send({ success: true });
     });
 
     // services api
@@ -219,7 +226,7 @@ async function run() {
       res.send(result);
     });
 
-    await client.db("admin").command({ ping: 1 });
+    // await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
